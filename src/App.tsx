@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import FeedPage from './pages/FeedPage';
@@ -22,7 +22,7 @@ export interface UserProfile {
 
 function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const [theme] = useState<'light' | 'dark'>(() => {
     const savedTheme = localStorage.getItem('fashionAITheme');
     if (savedTheme === 'light' || savedTheme === 'dark') {
       return savedTheme;
@@ -32,14 +32,6 @@ function App() {
     }
     return 'light';
   });
-
-  const toggleTheme = useCallback(() => {
-    setTheme(prevTheme => {
-      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-      localStorage.setItem('fashionAITheme', newTheme);
-      return newTheme;
-    });
-  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {
