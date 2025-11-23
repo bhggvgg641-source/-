@@ -57,7 +57,7 @@ export default function SearchModal({ user, onClose }: SearchModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleFilterChange = (field: string, value: string) => {
+  const handleFilterChange = (field: keyof typeof filters, value: string) => {
     setFilters(prev => ({
       ...prev,
       [field]: prev[field] === value ? '' : value, // Toggle selection
