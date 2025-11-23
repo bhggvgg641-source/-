@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import FeedPage from './pages/FeedPage';
@@ -22,6 +22,32 @@ export interface UserProfile {
 
 function App() {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const savedTheme = localStorage.getItem('fashionAITheme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      return savedTheme;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prevTheme => {
+      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('fashionAITheme', newTheme);
+      return newTheme;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
   const [loading, setLoading] = useState(true);
 
   // Load user from localStorage on app start
@@ -51,7 +77,7 @@ function App() {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-pink-50 to-blue-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
@@ -60,6 +86,7 @@ function App() {
 
   return (
     <Router>
+      <div className={theme === 'dark' ? 'dark' : ''}>
       <Routes>
         {!user ? (
           <>
@@ -76,6 +103,7 @@ function App() {
           </>
         )}
       </Routes>
+      </div>
     </Router>
   );
 }
