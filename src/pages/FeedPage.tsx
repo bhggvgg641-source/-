@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserProfile } from '../App';
+import type { UserProfile } from '../App';
 import SearchModal from '../components/SearchModal';
 
 interface Post {
