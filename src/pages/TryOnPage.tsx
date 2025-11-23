@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserProfile } from '../App';
+import type { UserProfile } from '../App';
 
 interface TryOnPageProps {
   user: UserProfile;

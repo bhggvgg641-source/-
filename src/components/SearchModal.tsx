@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserProfile } from '../App';
+import type { UserProfile } from '../App';
 
 interface SearchModalProps {
   user: UserProfile;

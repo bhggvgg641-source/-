@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserProfile } from '../App';
+import type { UserProfile } from '../App';
 
 interface LoginPageProps {
   onLogin: (user: UserProfile) => void;
