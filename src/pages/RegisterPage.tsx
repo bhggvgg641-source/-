@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { useNavigate, Link } from 'react-router-dom';
 import type { UserProfile } from '../App';
 
@@ -104,13 +105,45 @@ export default function RegisterPage({ onRegister }: RegisterPageProps) {
         additionalInfo: physicalInfo.additionalInfo,
       };
 
-      // Save to localStorage
-      const existingUsers = JSON.parse(localStorage.getItem('fashionAIUsers') || '[]');
-      existingUsers.push({ ...newUser, password: basicInfo.password });
-      localStorage.setItem('fashionAIUsers', JSON.stringify(existingUsers));
+      // Prepare data for backend
+      const registrationData = {
+        username: basicInfo.username,
+        email: basicInfo.email,
+        password: basicInfo.password,
+        profilePicture: basicInfo.profilePicturePreview, // Base64 string
+        skinTone: physicalInfo.skinTone,
+        bodyType: physicalInfo.bodyType,
+        weight: parseFloat(physicalInfo.weight),
+        height: parseFloat(physicalInfo.height),
+        age: parseInt(physicalInfo.age),
+        stylePreference: physicalInfo.stylePreference,
+        additionalInfo: physicalInfo.additionalInfo,
+      };
 
-      // Call onRegister callback
-      onRegister(newUser);
+      // Send registration request to backend
+      const response = await fetch('https://bakend-vj7i.onrender.com/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed on server side.');
+      }
+
+      const result = await response.json();
+      
+      // Assuming the backend returns the new user object
+      const registeredUser: UserProfile = {
+        ...newUser,
+        id: result.id || Date.now().toString(), // Use ID from backend if available
+      };
+
+      // Call onRegister callback and navigate
+      onRegister(registeredUser);
       navigate('/');
     } catch (err: any) {
       setError(err.message || 'Registration failed');

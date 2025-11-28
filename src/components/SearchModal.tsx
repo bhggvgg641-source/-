@@ -70,14 +70,23 @@ export default function SearchModal({ user, onClose }: SearchModalProps) {
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send search request to backend
+      const response = await fetch('https://bakend-vj7i.onrender.com/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.id}`, // Using user.id as a placeholder for a token
+        },
+        body: JSON.stringify({ filters, userProfile: user }),
+      });
 
-      // In a real app, this would send the search query to the backend
-      console.log('Search filters:', filters);
-      console.log('User profile:', user);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Search failed on server side.');
+      }
 
-      // Close modal after search
+      // Assuming the backend returns a success message or redirects
+      // For now, we just close the modal
       onClose();
     } catch (err: any) {
       setError(err.message || 'Search failed');

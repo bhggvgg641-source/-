@@ -12,9 +12,11 @@ interface SearchResult {
 interface SearchPageProps {
   user: UserProfile;
   onLogout: () => void;
+  toggleTheme: () => void;
+  currentTheme: 'light' | 'dark';
 }
 
-export default function SearchPage({ user, onLogout }: SearchPageProps) {
+export default function SearchPage({ user, onLogout, toggleTheme, currentTheme }: SearchPageProps) {
   const navigate = useNavigate();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);

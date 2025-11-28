@@ -5,9 +5,11 @@ import type { UserProfile } from '../App';
 interface TryOnPageProps {
   user: UserProfile;
   onLogout: () => void;
+  toggleTheme: () => void;
+  currentTheme: 'light' | 'dark';
 }
 
-export default function TryOnPage({ user, onLogout }: TryOnPageProps) {
+export default function TryOnPage({ user, onLogout, toggleTheme, currentTheme }: TryOnPageProps) {
   const navigate = useNavigate();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,11 +36,30 @@ export default function TryOnPage({ user, onLogout }: TryOnPageProps) {
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In a real app, this would process the image
-      console.log('Processing image for virtual try-on...');
+      // Send try-on request to backend
+      const response = await fetch('https://bakend-vj7i.onrender.com/api/try-on', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.id}`, // Using user.id as a placeholder for a token
+        },
+        body: JSON.stringify({ 
+          image: uploadedImage, // Base64 image data
+          userProfile: user 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Virtual try-on failed on server side.');
+      }
+
+      // Assuming the backend returns the processed image or a success message
+      const result = await response.json();
+      console.log('Try-on result:', result);
+      // You might want to display the result image here
+      // For now, we just log success
+      alert('Try-on successful! Check console for result.');
     } catch (err: any) {
       setError(err.message || 'Try-on failed');
     } finally {

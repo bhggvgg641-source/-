@@ -88,9 +88,9 @@ function App() {
           </>
         ) : (
           <>
-            <Route path="/" element={<FeedPage user={user} onLogout={handleLogout} />} />
-            <Route path="/search" element={<SearchPage user={user} onLogout={handleLogout} />} />
-            <Route path="/try-on" element={<TryOnPage user={user} onLogout={handleLogout} />} />
+            <Route path="/" element={<FeedPage user={user} onLogout={handleLogout} toggleTheme={toggleTheme} currentTheme={theme} />} />
+            <Route path="/search" element={<SearchPage user={user} onLogout={handleLogout} toggleTheme={toggleTheme} currentTheme={theme} />} />
+            <Route path="/try-on" element={<TryOnPage user={user} onLogout={handleLogout} toggleTheme={toggleTheme} currentTheme={theme} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
         )}

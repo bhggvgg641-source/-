@@ -15,9 +15,11 @@ interface Post {
 interface FeedPageProps {
   user: UserProfile;
   onLogout: () => void;
+  toggleTheme: () => void;
+  currentTheme: 'light' | 'dark';
 }
 
-export default function FeedPage({ user, onLogout }: FeedPageProps) {
+export default function FeedPage({ user, onLogout, toggleTheme, currentTheme }: FeedPageProps) {
   const navigate = useNavigate();
   const [visiblePosts, setVisiblePosts] = useState<Post[]>([]);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
@@ -29,22 +31,25 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const POSTS_PER_BATCH = 5;
 
-  // Simulate fetching posts from backend
+  // Fetch posts from backend
   const fetchPosts = useCallback(async (page: number) => {
     setIsLoadingMore(true);
     try {
-      // Simulate API call with delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch(`https://bakend-vj7i.onrender.com/api/feed?page=${page}&limit=${POSTS_PER_BATCH}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Assuming the backend uses a token for authentication
+          'Authorization': `Bearer ${user.id}`, // Using user.id as a placeholder for a token
+        },
+      });
 
-      // Generate mock posts
-      const newPosts: Post[] = Array.from({ length: POSTS_PER_BATCH }, (_, i) => ({
-        id: `post-${page}-${i}`,
-        text: `This stylish outfit is perfect for your ${user.stylePreference || 'casual'} style! The colors complement your ${user.skinTone} skin tone beautifully.`,
-        product_link: `https://example.com/product-${page}-${i}`,
-        image_url: `https://images.unsplash.com/photo-${1500000000000 + page * 1000 + i}?w=500&h=600&fit=crop`,
-        likes: Math.floor(Math.random() * 500),
-        comments: Math.floor(Math.random() * 100),
-      }));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to load posts from server.');
+      }
+
+      const newPosts: Post[] = await response.json();
 
       setAllPosts(prev => [...prev, ...newPosts]);
       setError('');
@@ -103,7 +108,7 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your personalized feed...</p>
         </div>
       </div>
@@ -111,18 +116,26 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-background border-b border-border sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-primary">
             Fashion AI
           </h1>
           <div className="flex items-center gap-4">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
+              title="Toggle Theme"
+            >
+              {currentTheme === 'dark' ? '☀️' : '🌙'}
+            </button>
             {/* Search Button */}
             <button
               onClick={() => setShowSearchModal(true)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
               title="Advanced Search"
             >
               🔍
@@ -131,7 +144,7 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
             {/* Try On Button */}
             <button
               onClick={() => navigate('/try-on')}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-secondary rounded-full transition-colors"
               title="Virtual Try On"
             >
               👕
@@ -142,7 +155,7 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
               <img
                 src={user.profilePicture}
                 alt={user.username}
-                className="w-8 h-8 rounded-full object-cover cursor-pointer"
+                className="w-8 h-8 rounded-full object-cover cursor-pointer border-2 border-primary"
                 onClick={handleLogout}
                 title="Logout"
               />
@@ -169,10 +182,10 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
               visiblePosts.map((post) => (
                 <div
                   key={post.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow animate-fade-in"
+                  className="bg-background border border-border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow animate-fade-in"
                 >
                   {/* Post Image */}
-                  <div className="w-full h-96 bg-gray-200 overflow-hidden">
+                  <div className="w-full h-96 bg-secondary overflow-hidden">
                     <img
                       src={post.image_url}
                       alt="Fashion recommendation"
@@ -182,37 +195,37 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
 
                   {/* Post Content */}
                   <div className="p-4">
-                    <p className="text-gray-800 mb-4 leading-relaxed">{post.text}</p>
+                    <p className="text-foreground mb-4 leading-relaxed">{post.text}</p>
 
                     {/* Product Link */}
                     <a
                       href={post.product_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block bg-gradient-to-r from-pink-600 to-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+                      className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
                     >
                       View Product
                     </a>
                   </div>
 
                   {/* Engagement Section */}
-                  <div className="px-4 py-3 border-t border-gray-200">
-                    <div className="flex gap-4 mb-3 text-sm text-gray-600">
+                  <div className="px-4 py-3 border-t border-border">
+                    <div className="flex gap-4 mb-3 text-sm text-muted-foreground">
                       <span>❤️ {post.likes} likes</span>
                       <span>💬 {post.comments} comments</span>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4 text-gray-600">
-                      <button className="flex items-center gap-2 hover:text-pink-600 transition-colors flex-1 justify-center py-2 hover:bg-gray-50 rounded">
+                    <div className="flex gap-4 text-muted-foreground">
+                      <button className="flex items-center gap-2 hover:text-primary transition-colors flex-1 justify-center py-2 hover:bg-secondary rounded">
                         <span>❤️</span>
                         <span>Like</span>
                       </button>
-                      <button className="flex items-center gap-2 hover:text-pink-600 transition-colors flex-1 justify-center py-2 hover:bg-gray-50 rounded">
+                      <button className="flex items-center gap-2 hover:text-primary transition-colors flex-1 justify-center py-2 hover:bg-secondary rounded">
                         <span>💬</span>
                         <span>Comment</span>
                       </button>
-                      <button className="flex items-center gap-2 hover:text-pink-600 transition-colors flex-1 justify-center py-2 hover:bg-gray-50 rounded">
+                      <button className="flex items-center gap-2 hover:text-primary transition-colors flex-1 justify-center py-2 hover:bg-secondary rounded">
                         <span>📤</span>
                         <span>Share</span>
                       </button>
@@ -230,7 +243,7 @@ export default function FeedPage({ user, onLogout }: FeedPageProps) {
           {/* Loading More Indicator */}
           {isLoadingMore && (
             <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           )}
         </div>

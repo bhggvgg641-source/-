@@ -19,17 +19,27 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setError('');
 
     try {
-      // Placeholder: In a real app, this would call the backend API
-      // For now, we'll simulate a login with stored user data
-      const savedUsers = JSON.parse(localStorage.getItem('fashionAIUsers') || '[]');
-      const user = savedUsers.find((u: any) => u.email === email && u.password === password);
+      // Send login request to backend
+      const response = await fetch('https://bakend-vj7i.onrender.com/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (user) {
-        onLogin(user);
-        navigate('/');
-      } else {
-        setError('Invalid email or password');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed. Check your credentials.');
       }
+
+      const result = await response.json();
+      
+      // Assuming the backend returns the user object
+      const loggedInUser: UserProfile = result.user;
+
+      onLogin(loggedInUser);
+      navigate('/');
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
